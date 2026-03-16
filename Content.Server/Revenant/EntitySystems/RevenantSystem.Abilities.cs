@@ -31,6 +31,8 @@ using Robust.Shared.Utility;
 using Robust.Shared.Map.Components;
 using Content.Shared.Whitelist;
 using Robust.Shared.Prototypes;
+using Content.Shared.Chemistry.Components;
+using Content.Shared.Fluids.Components;
 
 namespace Content.Server.Revenant.EntitySystems;
 
@@ -59,6 +61,7 @@ public sealed partial class RevenantSystem
         SubscribeLocalEvent<RevenantComponent, RevenantOverloadLightsActionEvent>(OnOverloadLightsAction);
         SubscribeLocalEvent<RevenantComponent, RevenantBlightActionEvent>(OnBlightAction);
         SubscribeLocalEvent<RevenantComponent, RevenantMalfunctionActionEvent>(OnMalfunctionAction);
+        SubscribeLocalEvent<RevenantComponent, RevenantBloodMagicActionEvent>(OnBloodMagicAction);
     }
 
     private void OnInteract(EntityUid uid, RevenantComponent component, UserActivateInWorldEvent args)
@@ -348,6 +351,24 @@ public sealed partial class RevenantSystem
                 continue;
 
             _emagSystem.TryEmagEffect(uid, uid, ent);
+        }
+    }
+
+    private void OnBloodMagicAction(Entity<RevenantComponent> ent, ref RevenantBloodMagicActionEvent args)
+    {
+        if (args.Handled
+            || !TryUseAbility(ent, ent, ent.Comp.BloodMagicCost, ent.Comp.BloodMagicDebuffs))
+            return;
+
+        args.Handled = true;
+
+        var totalBlood = FixedPoint2.Zero;
+
+        foreach (var puddleEnt in _lookup.GetEntitiesInRange(args.Target, ent.Comp.BloodMagicRadius))
+        {
+            if (TryComp<PuddleComponent>(puddleEnt, out var puddle)
+                && puddle.Solution is { } solution
+                && solution.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodMagicWhitelist]) > 10) ;
         }
     }
 }

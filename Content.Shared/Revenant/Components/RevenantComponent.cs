@@ -1,5 +1,6 @@
 using System.Numerics;
 using Content.Shared.Alert;
+using Content.Shared.Chemistry.Reagent;
 using Content.Shared.FixedPoint;
 using Content.Shared.Store;
 using Content.Shared.Whitelist;
@@ -199,6 +200,31 @@ public sealed partial class RevenantComponent : Component
     /// </summary>
     [DataField]
     public EntityWhitelist? MalfunctionBlacklist;
+    #endregion
+
+    #region Blood Magic Ability
+    /// <summary>
+    /// The amount of essence that is needed to use the ability.
+    /// </summary>
+    [ViewVariables(VVAccess.ReadWrite), DataField("malfunctionCost")]
+    public FixedPoint2 BloodMagicCost = 60;
+
+    /// <summary>
+    /// The status effects applied after the ability
+    /// the first float corresponds to amount of time the entity is stunned.
+    /// the second corresponds to the amount of time the entity is made solid.
+    /// </summary>
+    [DataField("malfunctionDebuffs")]
+    public Vector2 BloodMagicDebuffs = new(2, 8);
+
+    /// <summary>
+    /// The radius around the user that this ability affects
+    /// </summary>
+    [ViewVariables(VVAccess.ReadWrite), DataField("malfunctionRadius")]
+    public float BloodMagicRadius = 3.5f;
+
+    [DataField]
+    public List<ProtoId<ReagentPrototype>> BloodMagicWhitelist;
     #endregion
 
     [DataField]
