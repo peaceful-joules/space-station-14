@@ -33,6 +33,7 @@ using Content.Shared.Whitelist;
 using Robust.Shared.Prototypes;
 using Content.Shared.Chemistry.Components;
 using Content.Shared.Fluids.Components;
+using Content.Shared.Chemistry.EntitySystems;
 
 namespace Content.Server.Revenant.EntitySystems;
 
@@ -48,6 +49,7 @@ public sealed partial class RevenantSystem
     [Dependency] private readonly EntityWhitelistSystem _whitelistSystem = default!;
     [Dependency] private readonly SharedTransformSystem _transformSystem = default!;
     [Dependency] private readonly SharedMapSystem _mapSystem = default!;
+    [Dependency] private readonly SharedSolutionContainerSystem _solutionMan = default!;
 
     private static readonly ProtoId<TagPrototype> WindowTag = "Window";
 
@@ -362,13 +364,23 @@ public sealed partial class RevenantSystem
 
         args.Handled = true;
 
-        var totalBlood = FixedPoint2.Zero;
-
         foreach (var puddleEnt in _lookup.GetEntitiesInRange(args.Target, ent.Comp.BloodMagicRadius))
         {
             if (TryComp<PuddleComponent>(puddleEnt, out var puddle)
                 && puddle.Solution is { } solution
-                && solution.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodMagicWhitelist]) > 10) ;
+                && solution.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodMagicWhitelist]) > 10)
+            {
+                var spawned = SpawnNextToOrDrop(ent.Comp.BloodMagicProtoId, ent);
+                var soln = EnsureComp<SolutionComponent>(spawned);
+                var weh = (spawned, soln);
+
+                var removed = FixedPoint2.Zero;
+                foreach (var reagent in ent.Comp.BloodMagicWhitelist)
+                {
+                    removed += solution.Comp.Solution.RemoveReagent(reagent, 300);
+                    _solutionMan.TryTransferSolution(weh, solution.Comp.Solution, 300);
+                }
+            }
         }
     }
 }

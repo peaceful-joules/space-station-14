@@ -225,6 +225,9 @@ public sealed partial class RevenantComponent : Component
 
     [DataField]
     public List<ProtoId<ReagentPrototype>> BloodMagicWhitelist;
+
+    [DataField]
+    public EntProtoId BloodMagicProtoId;
     #endregion
 
     [DataField]
