@@ -56,6 +56,10 @@
       - EmaggableMedibot
       # borg become killer
       - EmagSiliconLaw
+    bloodMagicWhitelist:
+    - Blood
+    - Slime
+    - InsectBlood
   - type: PointLight
     color: MediumPurple
     radius: 2

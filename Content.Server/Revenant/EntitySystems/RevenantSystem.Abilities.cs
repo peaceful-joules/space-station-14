@@ -364,7 +364,7 @@ public sealed partial class RevenantSystem
 
         args.Handled = true;
 
-        foreach (var puddleEnt in _lookup.GetEntitiesInRange(args.Target, ent.Comp.BloodMagicRadius))
+        foreach (var puddleEnt in _lookup.GetEntitiesInRange(ent, ent.Comp.BloodMagicRadius))
         {
             if (TryComp<PuddleComponent>(puddleEnt, out var puddle)
                 && puddle.Solution is { } solution
@@ -374,12 +374,8 @@ public sealed partial class RevenantSystem
                 var soln = EnsureComp<SolutionComponent>(spawned);
                 var weh = (spawned, soln);
 
-                var removed = FixedPoint2.Zero;
                 foreach (var reagent in ent.Comp.BloodMagicWhitelist)
-                {
-                    removed += solution.Comp.Solution.RemoveReagent(reagent, 300);
-                    _solutionMan.TryTransferSolution(weh, solution.Comp.Solution, 300);
-                }
+                    _solutionMan.TryTransferSolution(weh, solution.Comp.Solution.SplitSolutionWithOnly(300, reagent), 300);
             }
         }
     }

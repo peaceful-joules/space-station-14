@@ -49,3 +49,16 @@
   conditions:
   - !type:ListingLimitedStockCondition
     stock: 1
+
+- type: listing
+  id: RevenantBloodMagic
+  name: revenant-malfunction-name
+  description: revenant-malfunction-desc
+  productAction: ActionRevenantBloodMagic
+  cost:
+    StolenEssence: 10
+  categories:
+  - RevenantAbilities
+  conditions:
+  - !type:ListingLimitedStockCondition
+    stock: 1

@@ -206,7 +206,7 @@ public sealed partial class RevenantComponent : Component
     /// <summary>
     /// The amount of essence that is needed to use the ability.
     /// </summary>
-    [ViewVariables(VVAccess.ReadWrite), DataField("malfunctionCost")]
+    [DataField]
     public FixedPoint2 BloodMagicCost = 60;
 
     /// <summary>
@@ -214,20 +214,20 @@ public sealed partial class RevenantComponent : Component
     /// the first float corresponds to amount of time the entity is stunned.
     /// the second corresponds to the amount of time the entity is made solid.
     /// </summary>
-    [DataField("malfunctionDebuffs")]
+    [DataField]
     public Vector2 BloodMagicDebuffs = new(2, 8);
 
     /// <summary>
     /// The radius around the user that this ability affects
     /// </summary>
-    [ViewVariables(VVAccess.ReadWrite), DataField("malfunctionRadius")]
+    [DataField]
     public float BloodMagicRadius = 3.5f;
 
     [DataField]
     public List<ProtoId<ReagentPrototype>> BloodMagicWhitelist;
 
     [DataField]
-    public EntProtoId BloodMagicProtoId;
+    public EntProtoId BloodMagicProtoId = "MobRevenantBloodSlime";
     #endregion
 
     [DataField]

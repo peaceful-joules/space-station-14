@@ -63,3 +63,15 @@
     useDelay: 20
   - type: InstantAction
     event: !type:RevenantMalfunctionActionEvent
+
+- type: entity
+  parent: BaseAction
+  id: ActionRevenantBloodMagic
+  name: Malfunction
+  description: Costs 60 Essence.
+  components:
+  - type: Action
+    icon: Interface/Actions/malfunction.png
+    useDelay: 20
+  - type: InstantAction
+    event: !type:RevenantBloodMagicActionEvent
