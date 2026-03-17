@@ -46,14 +46,15 @@ public sealed class MagnetPickupSystem : EntitySystem
 
         while (query.MoveNext(out var uid, out var comp, out var storage, out var xform, out var meta))
         {
-            if (TryComp<ItemToggleComponent>(uid, out var toggle) && !toggle.Activated)
-                continue;
 
             if (comp.NextScan > currentTime)
                 continue;
 
             comp.NextScan += ScanDelay;
             Dirty(uid, comp);
+
+            if (TryComp<ItemToggleComponent>(uid, out var toggle) && !toggle.Activated)
+                continue;
 
             var parentUid = xform.ParentUid;
             if (!_inventory.InSlotWithFlags((uid, xform, meta), comp.SlotFlags) && !_hands.IsHolding(parentUid, uid))

@@ -2,7 +2,7 @@
   name: ore bag of holding
   id: OreBagOfHolding
   parent: OreBag
-  description: A robust bag of holding for salvage billionaires and rich miners alike to carry large amounts of ore. Magnetises any nearby ores when attached to a belt.
+  description: A robust bag of holding for salvage billionaires and rich miners alike to carry large amounts of ore. Magnetises any nearby ores when activated.
   components:
   - type: MagnetPickup
     range: 2
