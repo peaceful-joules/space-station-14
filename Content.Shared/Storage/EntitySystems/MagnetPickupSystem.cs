@@ -1,4 +1,6 @@
+using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Inventory;
+using Content.Shared.Item.ItemToggle.Components;
 using Content.Shared.Storage.Components;
 using Content.Shared.Whitelist;
 using Robust.Shared.Physics.Components;
@@ -17,6 +19,7 @@ public sealed class MagnetPickupSystem : EntitySystem
     [Dependency] private readonly SharedTransformSystem _transform = default!;
     [Dependency] private readonly SharedStorageSystem _storage = default!;
     [Dependency] private readonly EntityWhitelistSystem _whitelistSystem = default!;
+    [Dependency] private readonly SharedHandsSystem _hands = default!;
 
 
     private static readonly TimeSpan ScanDelay = TimeSpan.FromSeconds(1);
@@ -43,23 +46,23 @@ public sealed class MagnetPickupSystem : EntitySystem
 
         while (query.MoveNext(out var uid, out var comp, out var storage, out var xform, out var meta))
         {
+            if (TryComp<ItemToggleComponent>(uid, out var toggle) && !toggle.Activated)
+                continue;
+
             if (comp.NextScan > currentTime)
                 continue;
 
             comp.NextScan += ScanDelay;
             Dirty(uid, comp);
 
-            if (!_inventory.TryGetContainingSlot((uid, xform, meta), out var slotDef))
-                continue;
-
-            if ((slotDef.SlotFlags & comp.SlotFlags) == 0x0)
+            var parentUid = xform.ParentUid;
+            if (!_inventory.InSlotWithFlags((uid, xform, meta), comp.SlotFlags) && !_hands.IsHolding(parentUid, uid))
                 continue;
 
             // No space
             if (!_storage.HasSpace((uid, storage)))
                 continue;
 
-            var parentUid = xform.ParentUid;
             var playedSound = false;
             var finalCoords = xform.Coordinates;
             var moverCoords = _transform.GetMoverCoordinates(uid, xform);
