@@ -66,7 +66,7 @@
 
 - type: entity
   parent: BaseAction
-  id: ActionRevenantBloodMagic
+  id: ActionRevenantBloodCorruption
   name: Malfunction
   description: Costs 60 Essence.
   components:
@@ -77,4 +77,4 @@
     checkCanAccess: false
     range: 0
   - type: WorldTargetAction
-    event: !type:RevenantBloodMagicActionEvent
+    event: !type:RevenantBloodCorruptionActionEvent

@@ -51,10 +51,10 @@
     stock: 1
 
 - type: listing
-  id: RevenantBloodMagic
+  id: RevenantBloodCorruption
   name: revenant-malfunction-name
   description: revenant-malfunction-desc
-  productAction: ActionRevenantBloodMagic
+  productAction: ActionRevenantBloodCorruption
   cost:
     StolenEssence: 10
   categories:

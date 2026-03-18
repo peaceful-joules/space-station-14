@@ -202,12 +202,12 @@ public sealed partial class RevenantComponent : Component
     public EntityWhitelist? MalfunctionBlacklist;
     #endregion
 
-    #region Blood Magic Ability
+    #region Blood Corruption Ability
     /// <summary>
     /// The amount of essence that is needed to use the ability.
     /// </summary>
     [DataField]
-    public FixedPoint2 BloodMagicCost = 60;
+    public FixedPoint2 BloodCorruptionCost = 60;
 
     /// <summary>
     /// The status effects applied after the ability
@@ -215,19 +215,22 @@ public sealed partial class RevenantComponent : Component
     /// the second corresponds to the amount of time the entity is made solid.
     /// </summary>
     [DataField]
-    public Vector2 BloodMagicDebuffs = new(2, 8);
+    public Vector2 BloodCorruptionDebuffs = new(2, 8);
 
     /// <summary>
     /// The radius around the user that this ability affects
     /// </summary>
     [DataField]
-    public float BloodMagicRadius = 3.5f;
+    public float BloodCorruptionRadius = 3.5f;
+
+    /// <summary>
+    /// Reagents that will be "corrupted" on the ability usage.
+    /// </summary>
+    [DataField]
+    public List<ProtoId<ReagentPrototype>> BloodCorruptionWhitelist;
 
     [DataField]
-    public List<ProtoId<ReagentPrototype>> BloodMagicWhitelist;
-
-    [DataField]
-    public EntProtoId BloodMagicProtoId = "MobRevenantBloodSlime";
+    public EntProtoId BloodCorruptionProtoId = "MobRevenantBloodSlime";
     #endregion
 
     [DataField]

@@ -66,7 +66,7 @@ public sealed partial class RevenantSystem
         SubscribeLocalEvent<RevenantComponent, RevenantOverloadLightsActionEvent>(OnOverloadLightsAction);
         SubscribeLocalEvent<RevenantComponent, RevenantBlightActionEvent>(OnBlightAction);
         SubscribeLocalEvent<RevenantComponent, RevenantMalfunctionActionEvent>(OnMalfunctionAction);
-        SubscribeLocalEvent<RevenantComponent, RevenantBloodMagicActionEvent>(OnBloodMagicAction);
+        SubscribeLocalEvent<RevenantComponent, RevenantBloodCorruptionActionEvent>(OnBloodCorruptionAction);
     }
 
     private void OnInteract(EntityUid uid, RevenantComponent component, UserActivateInWorldEvent args)
@@ -359,20 +359,20 @@ public sealed partial class RevenantSystem
         }
     }
 
-    private void OnBloodMagicAction(Entity<RevenantComponent> ent, ref RevenantBloodMagicActionEvent args)
+    private void OnBloodCorruptionAction(Entity<RevenantComponent> ent, ref RevenantBloodCorruptionActionEvent args)
     {
         // TODO: Made crit threshold based on solution.
         if (args.Handled)
             return;
 
         Dictionary<Entity<PuddleComponent>, Solution> silly = [];
-        foreach (var puddleEnt in _lookup.GetEntitiesInRange(args.Target, ent.Comp.BloodMagicRadius))
+        foreach (var puddleEnt in _lookup.GetEntitiesInRange(args.Target, ent.Comp.BloodCorruptionRadius))
         {
             if (TryComp<PuddleComponent>(puddleEnt, out var puddleTmp)
                 && puddleTmp.Solution is { } solutiontmp
-                && solutiontmp.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodMagicWhitelist]) > 10)
+                && solutiontmp.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodCorruptionWhitelist]) > 10)
             {
-                silly.Add((puddleEnt, puddleTmp), solutiontmp.Comp.Solution.SplitSolutionWithOnly(300, [.. ent.Comp.BloodMagicWhitelist]));
+                silly.Add((puddleEnt, puddleTmp), solutiontmp.Comp.Solution.SplitSolutionWithOnly(300, [.. ent.Comp.BloodCorruptionWhitelist]));
 
                 if (solutiontmp.Comp.Solution.Contents is [])
                     QueueDel(puddleEnt);
@@ -388,10 +388,10 @@ public sealed partial class RevenantSystem
         }
 
         args.Handled = true;
-        var spawned = SpawnNextToOrDrop(ent.Comp.BloodMagicProtoId, ent);
+        var spawned = SpawnNextToOrDrop(ent.Comp.BloodCorruptionProtoId, ent);
         var weh = (spawned, EnsureComp<SolutionComponent>(spawned));
 
-        if (!TryUseAbility(ent, ent, ent.Comp.BloodMagicCost, ent.Comp.BloodMagicDebuffs))
+        if (!TryUseAbility(ent, ent, ent.Comp.BloodCorruptionCost, ent.Comp.BloodCorruptionDebuffs))
             return;
 
         foreach (var a in silly)

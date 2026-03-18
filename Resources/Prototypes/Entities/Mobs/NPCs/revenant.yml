@@ -56,7 +56,7 @@
       - EmaggableMedibot
       # borg become killer
       - EmagSiliconLaw
-    bloodMagicWhitelist:
+    bloodCorruptionWhitelist:
     - Blood
     - Slime
     - InsectBlood
