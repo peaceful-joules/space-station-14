@@ -1,9 +1,11 @@
 using System.Numerics;
 using Content.Shared.Alert;
 using Content.Shared.Chemistry.Reagent;
+using Content.Shared.Destructible.Thresholds;
 using Content.Shared.FixedPoint;
 using Content.Shared.Store;
 using Content.Shared.Whitelist;
+using Robust.Shared.Audio;
 using Robust.Shared.GameStates;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom.Prototype;
@@ -230,7 +232,19 @@ public sealed partial class RevenantComponent : Component
     public List<ProtoId<ReagentPrototype>> BloodCorruptionWhitelist;
 
     [DataField]
-    public EntProtoId BloodCorruptionProtoId = "MobRevenantBloodSlime";
+    public ProtoId<ReagentPrototype> BloodCorruptionReagent = "Resin";
+
+    [DataField]
+    public EntProtoId BloodCorruptionMobProtoId = "MobReaper";
+
+    [DataField]
+    public MinMax BloodCorruptionAmount = new(10, 300);
+
+    [DataField]
+    public LocId BloodCorruptionPopup = "revenant-blood-corruption-not-a-puddle";
+
+    [DataField]
+    public SoundSpecifier BloodCorruptionSound = new SoundPathSpecifier("/Audio/Items/Artifact/artifact7.ogg");
     #endregion
 
     [DataField]

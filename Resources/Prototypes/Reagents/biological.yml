@@ -262,3 +262,28 @@
         damage:
           types:
             Cellular: 2
+
+- type: reagent
+  id: Resin
+  name: reagent-name-resin
+  group: Biological
+  desc: reagent-desc-resin
+  flavor: slimy
+  color: "#351439"
+  recognizable: true
+  standsout: true
+  physicalDesc: reagent-physical-desc-viscous
+  viscosity: 0.25
+  tileReactions:
+  - !type:SpillTileReaction
+  metabolisms:
+    Digestion:
+      effects:
+      - !type:HealthChange
+        damage:
+          types:
+            Poison: 1
+  footstepSound:
+    collection: FootstepSlime
+    params:
+      volume: 6

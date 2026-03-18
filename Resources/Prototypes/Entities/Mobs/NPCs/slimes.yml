@@ -247,24 +247,3 @@
       - MindRoleGhostRoleTeamAntagonist
       raffle:
         settings: short
-
-- type: entity
-  name: yellow slime
-  parent: ReagentSlime
-  id: MobRevenantBloodSlime
-  components:
-  - type: Bloodstream
-    maxVolumeModifier: 15
-    bloodReferenceSolution:
-      reagents:
-      - ReagentId: Blood
-        Quantity: 10
-  - type: PointLight
-    color: "#800000"
-  - type: Sprite
-    drawdepth: Mobs
-    sprite: Mobs/Aliens/elemental.rsi
-    layers:
-    - map: [ "enum.SolutionContainerLayers.Fill"]
-      state: alive
-      color: "#800000"

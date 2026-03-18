@@ -36,6 +36,7 @@ using Content.Shared.Fluids.Components;
 using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Fluids;
 using Content.Shared.Body.Systems;
+using Robust.Shared.Audio.Systems;
 
 namespace Content.Server.Revenant.EntitySystems;
 
@@ -51,8 +52,8 @@ public sealed partial class RevenantSystem
     [Dependency] private readonly EntityWhitelistSystem _whitelistSystem = default!;
     [Dependency] private readonly SharedTransformSystem _transformSystem = default!;
     [Dependency] private readonly SharedMapSystem _mapSystem = default!;
-    [Dependency] private readonly SharedBloodstreamSystem _bloodstream = default!;
     [Dependency] private readonly SharedPuddleSystem _puddle = default!;
+    [Dependency] private readonly SharedAudioSystem _audio = default!;
 
     private static readonly ProtoId<TagPrototype> WindowTag = "Window";
 
@@ -361,52 +362,49 @@ public sealed partial class RevenantSystem
 
     private void OnBloodCorruptionAction(Entity<RevenantComponent> ent, ref RevenantBloodCorruptionActionEvent args)
     {
-        // TODO: Made crit threshold based on solution.
+        // TODO: Made crit threshold of the spawned entity based on the amount of blood that was corrupted.
         if (args.Handled)
             return;
 
-        Dictionary<Entity<PuddleComponent>, Solution> silly = [];
+        Dictionary<Entity<PuddleComponent>, Solution> corPuddles = [];
         foreach (var puddleEnt in _lookup.GetEntitiesInRange(args.Target, ent.Comp.BloodCorruptionRadius))
         {
             if (TryComp<PuddleComponent>(puddleEnt, out var puddleTmp)
                 && puddleTmp.Solution is { } solutiontmp
-                && solutiontmp.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodCorruptionWhitelist]) > 10)
+                && solutiontmp.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodCorruptionWhitelist]) > ent.Comp.BloodCorruptionAmount.Min)
             {
-                silly.Add((puddleEnt, puddleTmp), solutiontmp.Comp.Solution.SplitSolutionWithOnly(300, [.. ent.Comp.BloodCorruptionWhitelist]));
-
-                if (solutiontmp.Comp.Solution.Contents is [])
-                    QueueDel(puddleEnt);
-                else
-                    _puddle.UpdateAppearance((puddleEnt, puddleTmp));
+                corPuddles.Add((puddleEnt, puddleTmp), solutiontmp.Comp.Solution.SplitSolutionWithOnly(ent.Comp.BloodCorruptionAmount.Max, [.. ent.Comp.BloodCorruptionWhitelist]));
             }
         }
 
-        if (silly.Count == 0)
+        if (corPuddles.Count == 0)
         {
-            _popup.PopupEntity(Loc.GetString("sssssss"), ent, ent);
+            _popup.PopupEntity(Loc.GetString(ent.Comp.BloodCorruptionPopup), ent, ent);
             return;
         }
 
         args.Handled = true;
-        var spawned = SpawnNextToOrDrop(ent.Comp.BloodCorruptionProtoId, ent);
-        var weh = (spawned, EnsureComp<SolutionComponent>(spawned));
 
         if (!TryUseAbility(ent, ent, ent.Comp.BloodCorruptionCost, ent.Comp.BloodCorruptionDebuffs))
             return;
 
-        foreach (var a in silly)
+        Spawn(ent.Comp.BloodCorruptionMobProtoId, args.Target);
+        _audio.PlayPvs(ent.Comp.BloodCorruptionSound, ent);
+
+        foreach (var puddle in corPuddles)
         {
-            _bloodstream.TryAddToBloodstream(weh.spawned, a.Value);
+            if (puddle.Key.Comp.Solution is not { } corSln)
+                continue;
 
-            foreach (var aaaaa in a.Value.Contents)
-                weh.Item2.Solution.RemoveReagent(aaaaa);
+            foreach (var corReagents in puddle.Value.Contents)
+            {
+                corSln.Comp.Solution.RemoveReagent(corReagents);
+                corSln.Comp.Solution.AddReagent(ent.Comp.BloodCorruptionReagent, corReagents.Quantity);
+            }
 
-            if (a.Key.Comp.Solution is { } solutiontmp && solutiontmp.Comp.Solution.Contents.Count == 0)
-                QueueDel(a.Key);
-            else
-                _puddle.UpdateAppearance(a.Key.Owner);
+            _puddle.UpdateAppearance(puddle.Key.Owner);
 
-            Dirty(a.Key);
+            Dirty(corSln);
         }
     }
 }

@@ -93,3 +93,43 @@
     tags:
     - SlowImmune
     - KnockdownImmune
+
+- type: entity
+  name: reaper
+  parent: BaseMob
+  id: MobReaper
+  components:
+  - type: Damageable
+    damageContainer: BiologicalMetaphysical
+  - type: NpcFactionMember
+    factions:
+    - hostile
+  - type: Sprite
+    drawdepth: Mobs
+    sprite: Mobs/Ghosts/revenant.rsi
+    layers:
+    - state: reaper
+    - state: reaper-tooth
+      shader: unshaded
+  - type: MeleeWeapon
+    altDisarm: false
+    angle: 0
+    animation: WeaponArcBite
+    soundHit:
+      path: /Audio/Effects/bite.ogg
+    damage:
+      types:
+        Piercing: 8
+  - type: PassiveDamage
+    damage:
+      groups:
+        Brute: -0.1
+        Burn: -0.1
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 100
+      behaviors:
+      - !type:GibBehavior
+        recursive: false
