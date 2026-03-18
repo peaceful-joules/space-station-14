@@ -142,6 +142,9 @@
       behaviors:
       - !type:GibBehavior
         recursive: false
+      - !type:PlaySoundBehavior
+        sound:
+          collection: gib
   - type: NoSlip
   - type: HTN
     rootTask:
