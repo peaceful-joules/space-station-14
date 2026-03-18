@@ -37,6 +37,7 @@ using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Fluids;
 using Content.Shared.Body.Systems;
 using Robust.Shared.Audio.Systems;
+using Content.Shared.Chemistry.Reagent;
 
 namespace Content.Server.Revenant.EntitySystems;
 
@@ -366,14 +367,20 @@ public sealed partial class RevenantSystem
         if (args.Handled)
             return;
 
-        Dictionary<Entity<PuddleComponent>, Solution> corPuddles = [];
+        Dictionary<Entity<PuddleComponent>, List<ReagentQuantity>> corPuddles = [];
         foreach (var puddleEnt in _lookup.GetEntitiesInRange(args.Target, ent.Comp.BloodCorruptionRadius))
         {
             if (TryComp<PuddleComponent>(puddleEnt, out var puddleTmp)
                 && puddleTmp.Solution is { } solutiontmp
                 && solutiontmp.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodCorruptionWhitelist]) > ent.Comp.BloodCorruptionAmount.Min)
             {
-                corPuddles.Add((puddleEnt, puddleTmp), solutiontmp.Comp.Solution.SplitSolutionWithOnly(ent.Comp.BloodCorruptionAmount.Max, [.. ent.Comp.BloodCorruptionWhitelist]));
+                List<ReagentQuantity> reagents = [];
+                foreach (var reagent in ent.Comp.BloodCorruptionWhitelist)
+                {
+                    reagents.Add(new ReagentQuantity(reagent, solutiontmp.Comp.Solution.GetTotalPrototypeQuantity(reagent)));
+                }
+
+                corPuddles.Add((puddleEnt, puddleTmp), reagents);
             }
         }
 
@@ -383,10 +390,10 @@ public sealed partial class RevenantSystem
             return;
         }
 
-        args.Handled = true;
-
         if (!TryUseAbility(ent, ent, ent.Comp.BloodCorruptionCost, ent.Comp.BloodCorruptionDebuffs))
             return;
+
+        args.Handled = true;
 
         Spawn(ent.Comp.BloodCorruptionMobProtoId, args.Target);
         _audio.PlayPvs(ent.Comp.BloodCorruptionSound, ent);
@@ -396,13 +403,14 @@ public sealed partial class RevenantSystem
             if (puddle.Key.Comp.Solution is not { } corSln)
                 continue;
 
-            foreach (var corReagents in puddle.Value.Contents)
+            foreach (var corReagent in puddle.Value)
             {
-                corSln.Comp.Solution.RemoveReagent(corReagents);
-                corSln.Comp.Solution.AddReagent(ent.Comp.BloodCorruptionReagent, corReagents.Quantity);
+                corSln.Comp.Solution.RemoveReagent(corReagent, ignoreReagentData: true);
+                corSln.Comp.Solution.AddReagent(ent.Comp.BloodCorruptionReagent, corReagent.Quantity);
             }
 
             _puddle.UpdateAppearance(puddle.Key.Owner);
+            _puddle.UpdateSlip(puddle.Key, corSln.Comp.Solution);
 
             Dirty(corSln);
         }

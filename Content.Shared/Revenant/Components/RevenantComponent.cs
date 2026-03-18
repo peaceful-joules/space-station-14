@@ -217,7 +217,7 @@ public sealed partial class RevenantComponent : Component
     /// the second corresponds to the amount of time the entity is made solid.
     /// </summary>
     [DataField]
-    public Vector2 BloodCorruptionDebuffs = new(2, 8);
+    public Vector2 BloodCorruptionDebuffs = new(3, 8);
 
     /// <summary>
     /// The radius around the user that this ability affects
@@ -232,7 +232,7 @@ public sealed partial class RevenantComponent : Component
     public List<ProtoId<ReagentPrototype>> BloodCorruptionWhitelist;
 
     [DataField]
-    public ProtoId<ReagentPrototype> BloodCorruptionReagent = "Resin";
+    public ProtoId<ReagentPrototype> BloodCorruptionReagent = "Ectoresin";
 
     [DataField]
     public EntProtoId BloodCorruptionMobProtoId = "MobReaper";

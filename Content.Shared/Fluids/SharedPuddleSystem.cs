@@ -223,7 +223,7 @@ public abstract partial class SharedPuddleSystem : EntitySystem
         _appearance.SetData(ent, PuddleVisuals.SolutionColor, color, appearance);
     }
 
-    private void UpdateSlip(Entity<PuddleComponent> entity, Solution solution)
+    public void UpdateSlip(Entity<PuddleComponent> entity, Solution solution)
     {
         if (!_stepTriggerQuery.TryComp(entity, out var comp))
             return;

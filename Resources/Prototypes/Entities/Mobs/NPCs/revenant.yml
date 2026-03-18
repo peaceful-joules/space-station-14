@@ -60,6 +60,12 @@
     - Blood
     - Slime
     - InsectBlood
+    - Sap
+    - CopperBlood
+    - AmmoniaBlood
+    - SulfurBlood
+    - ZombieBlood # revenant ultimative buff during zombie
+    - Ichor # technicaly this is also blood
   - type: PointLight
     color: MediumPurple
     radius: 2
@@ -96,14 +102,17 @@
 
 - type: entity
   name: reaper
-  parent: BaseMob
+  parent: [ SimpleSpaceMobBase, MobCombat ]
   id: MobReaper
+  description: Suddently not a ghost.
   components:
+  - type: Bloodstream
+    bloodReferenceSolution:
+      reagents:
+      - ReagentId: Ectoresin
+        Quantity: 50
   - type: Damageable
     damageContainer: BiologicalMetaphysical
-  - type: NpcFactionMember
-    factions:
-    - hostile
   - type: Sprite
     drawdepth: Mobs
     sprite: Mobs/Ghosts/revenant.rsi
@@ -119,7 +128,7 @@
       path: /Audio/Effects/bite.ogg
     damage:
       types:
-        Piercing: 8
+        Piercing: 10
   - type: PassiveDamage
     damage:
       groups:
@@ -133,3 +142,10 @@
       behaviors:
       - !type:GibBehavior
         recursive: false
+  - type: NoSlip
+  - type: HTN
+    rootTask:
+      task: SimpleHostileCompound
+  - type: NpcFactionMember
+    factions:
+    - SimpleHostile

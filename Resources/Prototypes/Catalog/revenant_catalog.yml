@@ -52,11 +52,11 @@
 
 - type: listing
   id: RevenantBloodCorruption
-  name: revenant-malfunction-name
-  description: revenant-malfunction-desc
+  name: revenant-blood-corruption-name
+  description: revenant-blood-corruption-desc
   productAction: ActionRevenantBloodCorruption
   cost:
-    StolenEssence: 10
+    StolenEssence: 75
   categories:
   - RevenantAbilities
   conditions:

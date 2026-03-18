@@ -67,14 +67,14 @@
 - type: entity
   parent: BaseAction
   id: ActionRevenantBloodCorruption
-  name: Malfunction
+  name: Blood corruption
   description: Costs 60 Essence.
   components:
   - type: Action
-    icon: Interface/Actions/malfunction.png
+    icon: Interface/Actions/bloodCorruption.png
+    itemIconStyle: NoItem
     useDelay: 20
   - type: TargetAction
-    checkCanAccess: false
-    range: 0
+    checkCanAccess: true
   - type: WorldTargetAction
     event: !type:RevenantBloodCorruptionActionEvent
