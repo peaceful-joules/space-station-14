@@ -56,7 +56,7 @@
   description: revenant-blood-corruption-desc
   productAction: ActionRevenantBloodCorruption
   cost:
-    StolenEssence: 75
+    StolenEssence: 30
   categories:
   - RevenantAbilities
   conditions:

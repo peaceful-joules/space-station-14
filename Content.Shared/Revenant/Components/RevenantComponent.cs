@@ -235,9 +235,6 @@ public sealed partial class RevenantComponent : Component
     public ProtoId<ReagentPrototype> BloodCorruptionReagent = "Ectoresin";
 
     [DataField]
-    public EntProtoId BloodCorruptionMobProtoId = "MobReaper";
-
-    [DataField]
     public MinMax BloodCorruptionAmount = new(10, 300);
 
     [DataField]

@@ -38,6 +38,7 @@ using Content.Shared.Fluids;
 using Content.Shared.Body.Systems;
 using Robust.Shared.Audio.Systems;
 using Content.Shared.Chemistry.Reagent;
+using Content.Server.Chemistry.Containers.EntitySystems;
 
 namespace Content.Server.Revenant.EntitySystems;
 
@@ -55,6 +56,8 @@ public sealed partial class RevenantSystem
     [Dependency] private readonly SharedMapSystem _mapSystem = default!;
     [Dependency] private readonly SharedPuddleSystem _puddle = default!;
     [Dependency] private readonly SharedAudioSystem _audio = default!;
+
+    [Dependency] private readonly SharedSolutionContainerSystem _sln = default!;
 
     private static readonly ProtoId<TagPrototype> WindowTag = "Window";
 
@@ -370,14 +373,12 @@ public sealed partial class RevenantSystem
         Dictionary<Entity<PuddleComponent>, List<ReagentQuantity>> corPuddles = [];
         foreach (var puddleEnt in _lookup.GetEntitiesInRange(args.Target, ent.Comp.BloodCorruptionRadius))
         {
-            if (TryComp<PuddleComponent>(puddleEnt, out var puddleTmp)
-                && puddleTmp.Solution is { } solutiontmp
-                && solutiontmp.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodCorruptionWhitelist]) > ent.Comp.BloodCorruptionAmount.Min)
+            if (TryComp<PuddleComponent>(puddleEnt, out var puddleTmp))
             {
                 List<ReagentQuantity> reagents = [];
                 foreach (var reagent in ent.Comp.BloodCorruptionWhitelist)
                 {
-                    reagents.Add(new ReagentQuantity(reagent, solutiontmp.Comp.Solution.GetTotalPrototypeQuantity(reagent)));
+                    reagents.Add(new ReagentQuantity(reagent, _sln.GetTotalPrototypeQuantity(puddleEnt, reagent)));
                 }
 
                 corPuddles.Add((puddleEnt, puddleTmp), reagents);
@@ -394,8 +395,6 @@ public sealed partial class RevenantSystem
             return;
 
         args.Handled = true;
-
-        Spawn(ent.Comp.BloodCorruptionMobProtoId, args.Target);
         _audio.PlayPvs(ent.Comp.BloodCorruptionSound, ent);
 
         foreach (var puddle in corPuddles)
@@ -405,8 +404,8 @@ public sealed partial class RevenantSystem
 
             foreach (var corReagent in puddle.Value)
             {
-                corSln.Comp.Solution.RemoveReagent(corReagent, ignoreReagentData: true);
-                corSln.Comp.Solution.AddReagent(ent.Comp.BloodCorruptionReagent, corReagent.Quantity);
+                _sln.RemoveReagent(corSln, corReagent.ToString(), corReagent.Quantity);
+                _sln.TryAddReagent(corSln, ent.Comp.BloodCorruptionReagent, corReagent.Quantity);
             }
 
             _puddle.UpdateAppearance(puddle.Key.Owner);

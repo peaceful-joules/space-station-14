@@ -193,14 +193,6 @@
     {
       "name": "inhand-right",
       "directions": 4
-    },
-    {
-      "name": "reaper",
-      "directions": 4
-    },
-    {
-      "name": "reaper-tooth",
-      "directions": 4
     }
   ]
 }
