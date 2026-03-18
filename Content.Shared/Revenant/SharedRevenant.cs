@@ -58,7 +58,7 @@ public sealed partial class RevenantMalfunctionActionEvent : InstantActionEvent
 {
 }
 
-public sealed partial class RevenantBloodMagicActionEvent : InstantActionEvent;
+public sealed partial class RevenantBloodMagicActionEvent : EntityTargetActionEvent;
 
 
 [NetSerializable, Serializable]

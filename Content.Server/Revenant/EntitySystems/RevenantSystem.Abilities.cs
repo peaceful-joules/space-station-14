@@ -34,6 +34,7 @@ using Robust.Shared.Prototypes;
 using Content.Shared.Chemistry.Components;
 using Content.Shared.Fluids.Components;
 using Content.Shared.Chemistry.EntitySystems;
+using Content.Shared.Fluids;
 
 namespace Content.Server.Revenant.EntitySystems;
 
@@ -50,6 +51,7 @@ public sealed partial class RevenantSystem
     [Dependency] private readonly SharedTransformSystem _transformSystem = default!;
     [Dependency] private readonly SharedMapSystem _mapSystem = default!;
     [Dependency] private readonly SharedSolutionContainerSystem _solutionMan = default!;
+    [Dependency] private readonly SharedPuddleSystem _puddle = default!;
 
     private static readonly ProtoId<TagPrototype> WindowTag = "Window";
 
@@ -358,24 +360,37 @@ public sealed partial class RevenantSystem
 
     private void OnBloodMagicAction(Entity<RevenantComponent> ent, ref RevenantBloodMagicActionEvent args)
     {
-        if (args.Handled
-            || !TryUseAbility(ent, ent, ent.Comp.BloodMagicCost, ent.Comp.BloodMagicDebuffs))
+        if (args.Handled)
+            return;
+
+        if (!TryComp<PuddleComponent>(args.Target, out var puddle)
+            || puddle.Solution is not { } solution
+            || solution.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodMagicWhitelist]) <= 0)
+        {
+            _popup.PopupEntity(Loc.GetString("sssssss"), ent, ent);
+            return;
+        }
+
+        if (!TryUseAbility(ent, ent, ent.Comp.BloodMagicCost, ent.Comp.BloodMagicDebuffs))
             return;
 
         args.Handled = true;
+        var spawned = SpawnNextToOrDrop(ent.Comp.BloodMagicProtoId, ent);
+        var weh = (spawned, EnsureComp<SolutionComponent>(spawned));
 
-        foreach (var puddleEnt in _lookup.GetEntitiesInRange(ent, ent.Comp.BloodMagicRadius))
+        foreach (var puddleEnt in _lookup.GetEntitiesInRange(args.Target, ent.Comp.BloodMagicRadius))
         {
-            if (TryComp<PuddleComponent>(puddleEnt, out var puddle)
-                && puddle.Solution is { } solution
-                && solution.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodMagicWhitelist]) > 10)
+            if (TryComp<PuddleComponent>(puddleEnt, out var puddleTmp)
+                && puddleTmp.Solution is { } solutiontmp
+                && solutiontmp.Comp.Solution.GetTotalPrototypeQuantity([.. ent.Comp.BloodMagicWhitelist]) > 10)
             {
-                var spawned = SpawnNextToOrDrop(ent.Comp.BloodMagicProtoId, ent);
-                var soln = EnsureComp<SolutionComponent>(spawned);
-                var weh = (spawned, soln);
-
                 foreach (var reagent in ent.Comp.BloodMagicWhitelist)
-                    _solutionMan.TryTransferSolution(weh, solution.Comp.Solution.SplitSolutionWithOnly(300, reagent), 300);
+                    _solutionMan.TryTransferSolution(weh, solutiontmp.Comp.Solution.SplitSolutionWithOnly(300, reagent), 300);
+
+                if (solutiontmp.Comp.Solution.Contents is [])
+                    QueueDel(puddleEnt);
+                else
+                    _puddle.UpdateAppearance((puddleEnt, puddleTmp));
             }
         }
     }

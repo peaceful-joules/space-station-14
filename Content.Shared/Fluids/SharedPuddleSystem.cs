@@ -183,7 +183,7 @@ public abstract partial class SharedPuddleSystem : EntitySystem
             ent.Comp.Solution = null;
     }
 
-    private void UpdateAppearance(Entity<PuddleComponent?, AppearanceComponent?> ent)
+    public void UpdateAppearance(Entity<PuddleComponent?, AppearanceComponent?> ent)
     {
         var (uid, puddle, appearance) = ent;
         if (!Resolve(ent, ref puddle, ref appearance))
