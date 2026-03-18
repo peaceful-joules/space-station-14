@@ -404,7 +404,7 @@ public sealed partial class RevenantSystem
 
             foreach (var corReagent in puddle.Value)
             {
-                _sln.RemoveReagent(corSln, corReagent.ToString(), corReagent.Quantity);
+                _sln.RemoveReagent(corSln, corReagent, true);
                 _sln.TryAddReagent(corSln, ent.Comp.BloodCorruptionReagent, corReagent.Quantity);
             }
 
