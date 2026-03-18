@@ -76,5 +76,5 @@
   - type: TargetAction
     checkCanAccess: false
     range: 0
-  - type: EntityTargetAction
+  - type: WorldTargetAction
     event: !type:RevenantBloodMagicActionEvent
