@@ -231,15 +231,21 @@ public sealed partial class RevenantComponent : Component
     [DataField]
     public List<ProtoId<ReagentPrototype>> BloodCorruptionWhitelist;
 
+    /// <summary>
+    /// Reagent that will replace corrupted reagents
+    /// </summary>
     [DataField]
     public ProtoId<ReagentPrototype> BloodCorruptionReagent = "Ectoresin";
 
-    [DataField]
-    public MinMax BloodCorruptionAmount = new(10, 300);
-
+    /// <summary>
+    /// LocId for the popup that will be shown when revenant attempts to interact without puddle
+    /// </summary>
     [DataField]
     public LocId BloodCorruptionPopup = "revenant-blood-corruption-not-a-puddle";
 
+    /// <summary>
+    /// Sound that will be played on corruption
+    /// </summary>
     [DataField]
     public SoundSpecifier BloodCorruptionSound = new SoundPathSpecifier("/Audio/Items/Artifact/artifact7.ogg");
     #endregion

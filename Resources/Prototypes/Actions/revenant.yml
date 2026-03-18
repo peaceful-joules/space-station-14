@@ -28,18 +28,6 @@
   - type: InstantAction
     event: !type:RevenantOverloadLightsActionEvent
 
-- type: entity
-  parent: BaseAction
-  id: ActionRevenantOverloadLights
-  name: Overload Lights
-  description: Costs 40 Essence.
-  components:
-  - type: Action
-    icon: Interface/Actions/overloadlight.png
-    useDelay: 20
-  - type: InstantAction
-    event: !type:RevenantOverloadLightsActionEvent
-
 #- type: entity
 #  parent: BaseAction
 #  id: ActionRevenantBlight

@@ -366,7 +366,6 @@ public sealed partial class RevenantSystem
 
     private void OnBloodCorruptionAction(Entity<RevenantComponent> ent, ref RevenantBloodCorruptionActionEvent args)
     {
-        // TODO: Made crit threshold of the spawned entity based on the amount of blood that was corrupted.
         if (args.Handled)
             return;
 
@@ -410,8 +409,6 @@ public sealed partial class RevenantSystem
 
             _puddle.UpdateAppearance(puddle.Key.Owner);
             _puddle.UpdateSlip(puddle.Key, corSln.Comp.Solution);
-
-            Dirty(corSln);
         }
     }
 }
