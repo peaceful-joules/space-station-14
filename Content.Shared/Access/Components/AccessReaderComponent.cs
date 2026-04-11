@@ -12,6 +12,7 @@ namespace Content.Shared.Access.Components;
 /// </summary>
 [RegisterComponent, NetworkedComponent]
 [Access(typeof(AccessReaderSystem))]
+[AutoGenerateComponentState]
 public sealed partial class AccessReaderComponent : Component
 {
     /// <summary>
@@ -31,7 +32,7 @@ public sealed partial class AccessReaderComponent : Component
     /// List of access groups that grant access to this reader. Only a single matching group is required to gain access.
     /// A group matches if it is a subset of the set being checked against.
     /// </summary>
-    [DataField("access")]
+    [DataField("access"), AutoNetworkedField]
     public List<HashSet<ProtoId<AccessLevelPrototype>>> AccessLists = new();
 
     /// <summary>
@@ -40,7 +41,7 @@ public sealed partial class AccessReaderComponent : Component
     /// <remarks>
     /// If null, the access lists of this entity have not been modified yet.
     /// </remarks>
-    [DataField]
+    [DataField, AutoNetworkedField]
     public List<HashSet<ProtoId<AccessLevelPrototype>>>? AccessListsOriginal = null;
 
     /// <summary>

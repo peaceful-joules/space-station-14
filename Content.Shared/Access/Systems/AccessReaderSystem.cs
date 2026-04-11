@@ -41,23 +41,25 @@ public sealed class AccessReaderSystem : EntitySystem
     {
         base.Initialize();
 
+        SubscribeLocalEvent<AccessReaderComponent, MapInitEvent>(OnMapInit);
         SubscribeLocalEvent<AccessReaderComponent, ExaminedEvent>(OnExamined);
         SubscribeLocalEvent<AccessReaderComponent, GotEmaggedEvent>(OnEmagged);
         SubscribeLocalEvent<AccessReaderComponent, LinkAttemptEvent>(OnLinkAttempt);
         SubscribeLocalEvent<AccessReaderComponent, AccessReaderConfigurationAttemptEvent>(OnConfigurationAttempt);
         SubscribeLocalEvent<AccessReaderComponent, FindAvailableLocksEvent>(OnFindAvailableLocks);
         SubscribeLocalEvent<AccessReaderComponent, CheckUserHasLockAccessEvent>(OnCheckLockAccess);
+    }
 
-        SubscribeLocalEvent<AccessReaderComponent, ComponentGetState>(OnGetState);
-        SubscribeLocalEvent<AccessReaderComponent, ComponentHandleState>(OnHandleState);
+    private void OnMapInit(Entity<AccessReaderComponent> ent, ref MapInitEvent args)
+    {
+        ent.Comp.AccessListsOriginal ??= [.. ent.Comp.AccessLists];
+        Dirty(ent);
     }
 
     private void OnExamined(Entity<AccessReaderComponent> ent, ref ExaminedEvent args)
     {
-        if (!GetMainAccessReader(ent, out var mainAccessReader))
+        if (!GetMainAccessReader(ent, out var mainAccessReader) || mainAccessReader.Value.Comp.AccessListsOriginal == null)
             return;
-
-        mainAccessReader.Value.Comp.AccessListsOriginal ??= new(mainAccessReader.Value.Comp.AccessLists);
 
         var accessHasBeenModified = mainAccessReader.Value.Comp.AccessLists.Count != mainAccessReader.Value.Comp.AccessListsOriginal.Count;
 
@@ -100,40 +102,6 @@ public sealed class AccessReaderSystem : EntitySystem
         var originalAccessesFormatted = ContentLocalizationManager.FormatListToOr(localizedOriginalNames);
         var originalSettingsMessage = Loc.GetString(mainAccessReader.Value.Comp.ExaminationText, ("access", originalAccessesFormatted));
         args.PushMarkup(originalSettingsMessage);
-    }
-
-    private void OnGetState(EntityUid uid, AccessReaderComponent component, ref ComponentGetState args)
-    {
-        args.State = new AccessReaderComponentState(
-            component.Enabled,
-            component.DenyTags,
-            component.AccessLists,
-            component.AccessListsOriginal,
-            _recordsSystem.Convert(component.AccessKeys),
-            component.AccessLog,
-            component.AccessLogLimit);
-    }
-
-    private void OnHandleState(EntityUid uid, AccessReaderComponent component, ref ComponentHandleState args)
-    {
-        if (args.Current is not AccessReaderComponentState state)
-            return;
-        component.Enabled = state.Enabled;
-        component.AccessKeys.Clear();
-        foreach (var key in state.AccessKeys)
-        {
-            var id = EnsureEntity<AccessReaderComponent>(key.Item1, uid);
-            if (!id.IsValid())
-                continue;
-
-            component.AccessKeys.Add(new StationRecordKey(key.Item2, id));
-        }
-
-        component.AccessLists = new(state.AccessLists);
-        component.AccessListsOriginal = state.AccessListsOriginal == null ? null : new(state.AccessListsOriginal);
-        component.DenyTags = new(state.DenyTags);
-        component.AccessLog = new(state.AccessLog);
-        component.AccessLogLimit = state.AccessLogLimit;
     }
 
     private void OnLinkAttempt(EntityUid uid, AccessReaderComponent component, LinkAttemptEvent args)
