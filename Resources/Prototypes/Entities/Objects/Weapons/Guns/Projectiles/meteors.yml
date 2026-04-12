@@ -120,7 +120,6 @@
         minSpawn: 2
         maxSpawn: 4
         spawnAfter: 0.5
-        spawnAtTiles: false
         spawnIntersecting: true
 
 - type: entity
@@ -163,7 +162,6 @@
         minSpawn: 3
         maxSpawn: 6
         spawnAfter: 0.5
-        spawnAtTiles: false
         spawnIntersecting: true
 
 - type: entity
@@ -193,7 +191,6 @@
         minSpawn: 5
         maxSpawn: 8
         spawnAfter: 0.5
-        spawnAtTiles: false
         spawnIntersecting: true
 
 - type: entity

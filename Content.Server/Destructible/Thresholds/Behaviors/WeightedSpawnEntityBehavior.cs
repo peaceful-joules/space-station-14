@@ -56,13 +56,7 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
     public float SpawnAfter;
 
     /// <summary>
-    /// Should entities be attached to the tiles?
-    /// </summary>
-    [DataField]
-    public bool AttachSpawners = true;
-
-    /// <summary>
-    /// Should entities be attached to the tiles?
+    /// Should entities be spawned only on grid?
     /// </summary>
     [DataField]
     public bool SpawnAtGrid = true;
@@ -79,7 +73,7 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
         var transform = system.EntityManager.System<TransformSystem>();
         var position = transform.GetMapCoordinates(uid);
         // Helper function used to randomly get an offset to apply to the original position
-        Vector2 GetRandomCoordinates(bool intersecting)
+        Vector2 GetRandomCoordinates(bool intersecting, bool gridspawn)
         {
             Vector2 coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
 
@@ -90,15 +84,18 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
                 do
                 {
                     coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
-                    attempts++;
-                    var grid = transform.GetGrid(uid);
-                    system.EntityManager.TryGetComponent<MapGridComponent>(grid, out var component);
-                    TileRef map;
-                    if (component != null && grid != null)
+                    if (gridspawn)
                     {
-                        map = system.EntityManager.System<SharedMapSystem>().GetTileRef(grid.Value, component, position.Offset(coords));
-                        isSpace = system.EntityManager.System<TurfSystem>().IsSpace(map.Tile);
+                        var grid = transform.GetGrid(uid);
+                        system.EntityManager.TryGetComponent<MapGridComponent>(grid, out var component);
+                        TileRef map;
+                        if (component != null && grid != null)
+                        {
+                            map = system.EntityManager.System<SharedMapSystem>().GetTileRef(grid.Value, component, position.Offset(coords));
+                            isSpace = system.EntityManager.System<TurfSystem>().IsSpace(map.Tile);
+                        }
                     }
+                    attempts++;
                 }
                 while ((system.EntityManager.System<EntityLookupSystem>().AnyEntitiesIntersecting(position.Offset(coords), LookupFlags.Static) || isSpace) && attempts < 10);
                 if (attempts == 10)
@@ -121,7 +118,7 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
             // spawn the spawner, assign it a lifetime, and assign the entity that it will spawn when despawned
             for (var i = 0; i < amountToSpawn; i++)
             {
-                var target = GetRandomCoordinates(SpawnIntersecting);
+                var target = GetRandomCoordinates(SpawnIntersecting, SpawnAtGrid);
 
                 if (target == new Vector2(0, 0))
                     return;
@@ -138,7 +135,7 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
             // directly spawn the desired entities
             for (var i = 0; i < amountToSpawn; i++)
             {
-                var target = GetRandomCoordinates(SpawnIntersecting);
+                var target = GetRandomCoordinates(SpawnIntersecting, SpawnAtGrid);
 
                 if (target != new Vector2(0, 0))
                     system.EntityManager.SpawnEntity(entity, position.Offset(target));
