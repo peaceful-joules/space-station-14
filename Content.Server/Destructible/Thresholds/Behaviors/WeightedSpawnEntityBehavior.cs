@@ -8,6 +8,8 @@ using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom.Prototype;
 using Robust.Shared.Spawners;
 using Robust.Shared.Random;
+using Robust.Shared.Map;
+using Content.Shared.Maps;
 
 namespace Content.Server.Destructible.Thresholds.Behaviors;
 
@@ -56,7 +58,7 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
     /// Should entities be attached to the tiles?
     /// </summary>
     [DataField]
-    public bool SpawnAtTiles = false;
+    public bool AttachSpawners = true;
 
     /// <summary>
     /// Should entities be attached to the tiles?
@@ -75,38 +77,26 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
         // Get the position at which to start initially spawning entities
         var transform = system.EntityManager.System<TransformSystem>();
         var position = transform.GetMapCoordinates(uid);
-        List<Vector2> usedCoords = [];
         // Helper function used to randomly get an offset to apply to the original position
-        Vector2 GetRandomCoordinates(bool tile, bool intersecting, List<Vector2> usedCoords)
+        Vector2 GetRandomCoordinates(bool intersecting)
         {
             Vector2 coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
 
-            if (tile)
-                coords = coords.Rounded();
-
             if (intersecting)
             {
-                var a = position.Offset(coords);
+                var attempts = 0;
                 do
                 {
                     coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
-                    if (tile)
-                        coords = coords.Rounded();
-                    a = position.Offset(coords);
+                    attempts++;
+                    var mapId = system.EntityManager.System<SharedMapSystem>().GetMapOrInvalid(position.MapId);
+                    var map = system.EntityManager.System<SharedMapSystem>().GetTileRef(position.MapId, position);
+                    system.EntityManager.System<TurfSystem>().IsSpace
                 }
-                while (system.EntityManager.System<EntityLookupSystem>().AnyEntitiesIntersecting(a, LookupFlags.Static) || usedCoords.Contains(coords));
+                while (system.EntityManager.System<EntityLookupSystem>().AnyEntitiesIntersecting(position.Offset(coords), LookupFlags.Static) && attempts < 10);
+                if (attempts == 10)
+                    coords = new(0, 0);
             }
-
-            // if (usedCoords != null)
-            // {
-            //     do
-            //     {
-            //         coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
-            //         if (tile)
-            //             coords = coords.Rounded();
-            //     }
-            //     while (usedCoords.Contains(coords));
-            // }
 
             return coords;
         }
@@ -124,16 +114,12 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
             // spawn the spawner, assign it a lifetime, and assign the entity that it will spawn when despawned
             for (var i = 0; i < amountToSpawn; i++)
             {
-                Vector2 target;
-                if (SpawnIntersecting)
-                {
-                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting, usedCoords);
-                    usedCoords.Add(target);
-                }
-                else
-                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting, usedCoords);
+                var target = GetRandomCoordinates(SpawnIntersecting);
 
-                var spawner = system.EntityManager.SpawnEntity(tempSpawnerProto.ID, position.Offset(target));
+                if (target == new Vector2(0, 0))
+                    return;
+
+                var spawner = system.EntityManager.Spawn(tempSpawnerProto.ID, position.Offset(target));
                 system.EntityManager.EnsureComponent<TimedDespawnComponent>(spawner, out var timedDespawnComponent);
                 timedDespawnComponent.Lifetime = SpawnAfter;
                 system.EntityManager.EnsureComponent<SpawnOnDespawnComponent>(spawner, out var spawnOnDespawnComponent);
@@ -145,16 +131,10 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
             // directly spawn the desired entities
             for (var i = 0; i < amountToSpawn; i++)
             {
-                Vector2 target;
-                if (SpawnIntersecting)
-                {
-                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting, usedCoords);
-                    usedCoords.Add(target);
-                }
-                else
-                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting, usedCoords);
+                var target = GetRandomCoordinates(SpawnIntersecting);
 
-                system.EntityManager.SpawnEntity(entity, position.Offset(target));
+                if (target != new Vector2(0, 0))
+                    system.EntityManager.SpawnEntity(entity, position.Offset(target));
             }
         }
     }
