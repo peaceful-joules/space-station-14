@@ -10,6 +10,7 @@ using Robust.Shared.Spawners;
 using Robust.Shared.Random;
 using Robust.Shared.Map;
 using Content.Shared.Maps;
+using Robust.Shared.Map.Components;
 
 namespace Content.Server.Destructible.Thresholds.Behaviors;
 
@@ -85,15 +86,21 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
             if (intersecting)
             {
                 var attempts = 0;
+                var isSpace = true;
                 do
                 {
                     coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
                     attempts++;
-                    var mapId = system.EntityManager.System<SharedMapSystem>().GetMapOrInvalid(position.MapId);
-                    var map = system.EntityManager.System<SharedMapSystem>().GetTileRef(position.MapId, position);
-                    system.EntityManager.System<TurfSystem>().IsSpace
+                    var grid = transform.GetGrid(uid);
+                    system.EntityManager.TryGetComponent<MapGridComponent>(grid, out var component);
+                    TileRef map;
+                    if (component != null && grid != null)
+                    {
+                        map = system.EntityManager.System<SharedMapSystem>().GetTileRef(grid.Value, component, position.Offset(coords));
+                        isSpace = system.EntityManager.System<TurfSystem>().IsSpace(map.Tile);
+                    }
                 }
-                while (system.EntityManager.System<EntityLookupSystem>().AnyEntitiesIntersecting(position.Offset(coords), LookupFlags.Static) && attempts < 10);
+                while ((system.EntityManager.System<EntityLookupSystem>().AnyEntitiesIntersecting(position.Offset(coords), LookupFlags.Static) || isSpace) && attempts < 10);
                 if (attempts == 10)
                     coords = new(0, 0);
             }
