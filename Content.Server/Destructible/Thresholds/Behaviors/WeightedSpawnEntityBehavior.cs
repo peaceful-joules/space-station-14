@@ -59,6 +59,12 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
     public bool SpawnAtTiles = false;
 
     /// <summary>
+    /// Should entities be attached to the tiles?
+    /// </summary>
+    [DataField]
+    public bool SpawnAtGrid = true;
+
+    /// <summary>
     /// Should multiple entities spawn at the same tile?
     /// </summary>
     [DataField]
@@ -71,36 +77,38 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
         var position = transform.GetMapCoordinates(uid);
         List<Vector2> usedCoords = [];
         // Helper function used to randomly get an offset to apply to the original position
-        Vector2 GetRandomCoordinates(bool tile, bool intersecting, List<Vector2>? usedCoords = null)
+        Vector2 GetRandomCoordinates(bool tile, bool intersecting, List<Vector2> usedCoords)
         {
             Vector2 coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
 
             if (tile)
-                coords.Rounded();
+                coords = coords.Rounded();
 
             if (intersecting)
             {
+                var a = position.Offset(coords);
                 do
                 {
                     coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
                     if (tile)
                         coords = coords.Rounded();
+                    a = position.Offset(coords);
                 }
-                while (system.EntityManager.System<EntityLookupSystem>().AnyEntitiesIntersecting(position.Offset(coords), LookupFlags.Static));
+                while (system.EntityManager.System<EntityLookupSystem>().AnyEntitiesIntersecting(a, LookupFlags.Static) || usedCoords.Contains(coords));
             }
 
-            if (usedCoords != null)
-            {
-                do
-                {
-                    coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
-                    if (tile)
-                        coords = coords.Rounded();
-                }
-                while (usedCoords.Contains(coords));
-            }
+            // if (usedCoords != null)
+            // {
+            //     do
+            //     {
+            //         coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
+            //         if (tile)
+            //             coords = coords.Rounded();
+            //     }
+            //     while (usedCoords.Contains(coords));
+            // }
 
-            return new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
+            return coords;
         }
         // Randomly pick the entity to spawn and randomly pick how many to spawn
         var entity = system.PrototypeManager.Index(WeightedEntityTable).Pick(system.Random);
@@ -123,7 +131,7 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
                     usedCoords.Add(target);
                 }
                 else
-                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting);
+                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting, usedCoords);
 
                 var spawner = system.EntityManager.SpawnEntity(tempSpawnerProto.ID, position.Offset(target));
                 system.EntityManager.EnsureComponent<TimedDespawnComponent>(spawner, out var timedDespawnComponent);
@@ -144,7 +152,7 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
                     usedCoords.Add(target);
                 }
                 else
-                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting);
+                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting, usedCoords);
 
                 system.EntityManager.SpawnEntity(entity, position.Offset(target));
             }

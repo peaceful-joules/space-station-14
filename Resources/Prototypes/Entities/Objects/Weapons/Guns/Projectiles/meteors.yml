@@ -119,8 +119,7 @@
         weightedEntityTable: "MeteorSpawnAsteroidWallTable"
         minSpawn: 2
         maxSpawn: 4
-        spawnAfter: 0.5
-        spawnAtTiles: true
+        spawnAtTiles: false
         spawnIntersecting: true
 
 - type: entity
@@ -162,8 +161,7 @@
         spawnOffset: 2
         minSpawn: 3
         maxSpawn: 6
-        spawnAfter: 0.5
-        spawnAtTiles: true
+        spawnAtTiles: false
         spawnIntersecting: true
 
 - type: entity
@@ -192,8 +190,7 @@
         spawnOffset: 3
         minSpawn: 5
         maxSpawn: 8
-        spawnAfter: 0.5
-        spawnAtTiles: true
+        spawnAtTiles: false
         spawnIntersecting: true
 
 - type: entity
