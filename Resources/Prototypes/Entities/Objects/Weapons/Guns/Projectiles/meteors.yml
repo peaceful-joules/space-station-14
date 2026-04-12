@@ -120,6 +120,8 @@
         minSpawn: 2
         maxSpawn: 4
         spawnAfter: 0.5
+        spawnAtTiles: true
+        spawnIntersecting: true
 
 - type: entity
   parent: BaseMeteor
@@ -161,6 +163,8 @@
         minSpawn: 3
         maxSpawn: 6
         spawnAfter: 0.5
+        spawnAtTiles: true
+        spawnIntersecting: true
 
 - type: entity
   parent: BaseMeteor
@@ -189,6 +193,8 @@
         minSpawn: 5
         maxSpawn: 8
         spawnAfter: 0.5
+        spawnAtTiles: true
+        spawnIntersecting: true
 
 - type: entity
   parent: BaseMeteor

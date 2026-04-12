@@ -52,13 +52,56 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
     [DataField]
     public float SpawnAfter;
 
+    /// <summary>
+    /// Should entities be attached to the tiles?
+    /// </summary>
+    [DataField]
+    public bool SpawnAtTiles = false;
+
+    /// <summary>
+    /// Should multiple entities spawn at the same tile?
+    /// </summary>
+    [DataField]
+    public bool SpawnIntersecting = false;
+
     public void Execute(EntityUid uid, DestructibleSystem system, EntityUid? cause = null)
     {
         // Get the position at which to start initially spawning entities
         var transform = system.EntityManager.System<TransformSystem>();
         var position = transform.GetMapCoordinates(uid);
+        List<Vector2> usedCoords = [];
         // Helper function used to randomly get an offset to apply to the original position
-        Vector2 GetRandomVector() => new (system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
+        Vector2 GetRandomCoordinates(bool tile, bool intersecting, List<Vector2>? usedCoords = null)
+        {
+            Vector2 coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
+
+            if (tile)
+                coords.Rounded();
+
+            if (intersecting)
+            {
+                do
+                {
+                    coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
+                    if (tile)
+                        coords = coords.Rounded();
+                }
+                while (system.EntityManager.System<EntityLookupSystem>().AnyEntitiesIntersecting(position.Offset(coords), LookupFlags.Static));
+            }
+
+            if (usedCoords != null)
+            {
+                do
+                {
+                    coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
+                    if (tile)
+                        coords = coords.Rounded();
+                }
+                while (usedCoords.Contains(coords));
+            }
+
+            return new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
+        }
         // Randomly pick the entity to spawn and randomly pick how many to spawn
         var entity = system.PrototypeManager.Index(WeightedEntityTable).Pick(system.Random);
         var amountToSpawn = system.Random.NextFloat(MinSpawn, MaxSpawn);
@@ -73,7 +116,16 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
             // spawn the spawner, assign it a lifetime, and assign the entity that it will spawn when despawned
             for (var i = 0; i < amountToSpawn; i++)
             {
-                var spawner = system.EntityManager.SpawnEntity(tempSpawnerProto.ID, position.Offset(GetRandomVector()));
+                Vector2 target;
+                if (SpawnIntersecting)
+                {
+                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting, usedCoords);
+                    usedCoords.Add(target);
+                }
+                else
+                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting);
+
+                var spawner = system.EntityManager.SpawnEntity(tempSpawnerProto.ID, position.Offset(target));
                 system.EntityManager.EnsureComponent<TimedDespawnComponent>(spawner, out var timedDespawnComponent);
                 timedDespawnComponent.Lifetime = SpawnAfter;
                 system.EntityManager.EnsureComponent<SpawnOnDespawnComponent>(spawner, out var spawnOnDespawnComponent);
@@ -85,7 +137,16 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
             // directly spawn the desired entities
             for (var i = 0; i < amountToSpawn; i++)
             {
-                system.EntityManager.SpawnEntity(entity, position.Offset(GetRandomVector()));
+                Vector2 target;
+                if (SpawnIntersecting)
+                {
+                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting, usedCoords);
+                    usedCoords.Add(target);
+                }
+                else
+                    target = GetRandomCoordinates(SpawnAtTiles, SpawnIntersecting);
+
+                system.EntityManager.SpawnEntity(entity, position.Offset(target));
             }
         }
     }
