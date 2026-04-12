@@ -10,6 +10,7 @@ using Robust.Shared.Spawners;
 using Robust.Shared.Random;
 using Robust.Shared.Map;
 using Content.Shared.Maps;
+using Robust.Shared.Map.Components;
 
 namespace Content.Server.Destructible.Thresholds.Behaviors;
 
@@ -55,18 +56,6 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
     public float SpawnAfter;
 
     /// <summary>
-    /// Should entities be attached to the tiles?
-    /// </summary>
-    [DataField]
-    public bool AttachSpawners = true;
-
-    /// <summary>
-    /// Should entities be attached to the tiles?
-    /// </summary>
-    [DataField]
-    public bool SpawnAtGrid = true;
-
-    /// <summary>
     /// Should multiple entities spawn at the same tile?
     /// </summary>
     [DataField]
@@ -89,11 +78,8 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
                 {
                     coords = new(system.Random.NextFloat(-SpawnOffset, SpawnOffset), system.Random.NextFloat(-SpawnOffset, SpawnOffset));
                     attempts++;
-                    var mapId = system.EntityManager.System<SharedMapSystem>().GetMapOrInvalid(position.MapId);
-                    var map = system.EntityManager.System<SharedMapSystem>().GetTileRef(position.MapId, position);
-                    system.EntityManager.System<TurfSystem>().IsSpace
                 }
-                while (system.EntityManager.System<EntityLookupSystem>().AnyEntitiesIntersecting(position.Offset(coords), LookupFlags.Static) && attempts < 10);
+                while (system.EntityManager.System<EntityLookupSystem>().AnyEntitiesIntersecting(position.Offset(coords), LookupFlags.All) && attempts < 10);
                 if (attempts == 10)
                     coords = new(0, 0);
             }
@@ -134,7 +120,7 @@ public sealed partial class WeightedSpawnEntityBehavior : IThresholdBehavior
                 var target = GetRandomCoordinates(SpawnIntersecting);
 
                 if (target != new Vector2(0, 0))
-                    system.EntityManager.SpawnEntity(entity, position.Offset(target));
+                    system.EntityManager.Spawn(entity, position.Offset(target));
             }
         }
     }
