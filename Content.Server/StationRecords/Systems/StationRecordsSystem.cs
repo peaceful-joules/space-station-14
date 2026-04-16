@@ -3,6 +3,7 @@ using Content.Server.Access.Systems;
 using Content.Shared.Access.Components;
 using Content.Shared.Forensics.Components;
 using Content.Shared.GameTicking;
+using Content.Shared.Humanoid.Prototypes;
 using Content.Shared.Inventory;
 using Content.Shared.PDA;
 using Content.Shared.Preferences;
@@ -340,7 +341,7 @@ public sealed class StationRecordsSystem : SharedStationRecordsSystem
             StationRecordFilterType.Job =>
                 !someRecord.JobTitle.ToLower().Contains(filterLowerCaseValue),
             StationRecordFilterType.Species =>
-                !someRecord.Species.ToLower().Contains(filterLowerCaseValue),
+                !Loc.GetString(_prototypeManager.Index<SpeciesPrototype>(someRecord.Species).Name).ToLower().Contains(filterLowerCaseValue),
             StationRecordFilterType.Prints => someRecord.Fingerprint != null
                 && IsFilterWithSomeCodeValue(someRecord.Fingerprint, filterLowerCaseValue),
             StationRecordFilterType.DNA => someRecord.DNA != null
