@@ -159,7 +159,7 @@ public sealed class StationRecordsSystem : SharedStationRecordsSystem
             JobTitle = jobPrototype.LocalizedName,
             JobIcon = jobPrototype.Icon,
             JobPrototype = jobId,
-            Species = species,
+            Species = Loc.GetString(_prototypeManager.Index<SpeciesPrototype>(species).Name),
             Gender = gender,
             DisplayPriority = jobPrototype.RealDisplayWeight,
             Fingerprint = mobFingerprint,
@@ -341,7 +341,7 @@ public sealed class StationRecordsSystem : SharedStationRecordsSystem
             StationRecordFilterType.Job =>
                 !someRecord.JobTitle.ToLower().Contains(filterLowerCaseValue),
             StationRecordFilterType.Species =>
-                !Loc.GetString(_prototypeManager.Index<SpeciesPrototype>(someRecord.Species).Name).ToLower().Contains(filterLowerCaseValue),
+                !someRecord.Species.ToLower().Contains(filterLowerCaseValue),
             StationRecordFilterType.Prints => someRecord.Fingerprint != null
                 && IsFilterWithSomeCodeValue(someRecord.Fingerprint, filterLowerCaseValue),
             StationRecordFilterType.DNA => someRecord.DNA != null
