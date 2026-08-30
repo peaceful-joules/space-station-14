@@ -17,10 +17,11 @@ public sealed partial class ElectrocuteEntityEffectSystem : EntityEffectSystem<S
     protected override void Effect(Entity<StatusEffectsComponent> entity, ref EntityEffectEvent<Electrocute> args)
     {
         var effect = args.Effect;
+        var damage = (int)MathF.Round(args.Scale * effect.ShockDamage, MidpointRounding.ToPositiveInfinity);
 
         _electrocution.TryDoElectrocution(entity,
             null,
-            (int)(args.Scale * effect.ShockDamage),
+            damage,
             effect.ElectrocuteTime,
             effect.Refresh,
             siemensCoefficient: effect.SiemensCoefficient,
