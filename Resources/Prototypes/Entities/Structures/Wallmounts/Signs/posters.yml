@@ -1138,7 +1138,7 @@
 
 - type: entity
   parent: PosterBase
-  id: PosterLegitVulture
+  id: PosterLegitIanHunt
   name: "Darwinist robusters"
   description: Old poster advertising association of the darwinist robust hunters. Survives the strongest. Or probably first who will get a spear.
   components:
